@@ -1,14 +1,17 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { Contact } = require('../models');
+const { Contact } = require("../models");
 
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
     try {
-        const contact = new Contact(req.body);
-        await contact.save();
-        res.status(201).json({ message: 'Gửi lời nhắn thành công!' });
+        const { name, email, message } = req.body;
+        const newContact = new Contact({ name, email, message });
+        await newContact.save();
+        console.log("Contact saved:", newContact); // Thêm log để kiểm tra
+        res.status(201).json(newContact);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error("Error saving contact:", error); // Thêm log lỗi
+        res.status(500).json({ message: error.message });
     }
 });
 

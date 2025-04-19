@@ -1,30 +1,33 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const bcrypt = require('bcrypt');
-const { User } = require('../models');
+const { User } = require("../models");
 
-router.post('/register', async (req, res) => {
+// Đăng ký người dùng
+router.post("/register", async (req, res) => {
     try {
-        const { username, email, password, address } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ username, email, password: hashedPassword, address });
-        await user.save();
-        res.status(201).json({ message: 'Đăng ký thành công!' });
+        const { username, password, email } = req.body;
+        const newUser = new User({ username, password, email });
+        await newUser.save();
+        console.log("User saved:", newUser); // Thêm log để kiểm tra
+        res.status(201).json(newUser);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error("Error saving user:", error); // Thêm log lỗi
+        res.status(500).json({ message: error.message });
     }
 });
 
-router.post('/login', async (req, res) => {
+// Đăng nhập (chỉ để kiểm tra, không ghi dữ liệu)
+router.post("/login", async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
-        if (!user) throw new Error('Email không tồn tại!');
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) throw new Error('Mật khẩu không đúng!');
-        res.json({ message: 'Đăng nhập thành công!', user: { _id: user._id, username: user.username, email: user.email, address: user.address } });
+        const { username, password } = req.body;
+        const user = await User.findOne({ username, password });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+        res.json(user);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error("Error logging in:", error);
+        res.status(500).json({ message: error.message });
     }
 });
 

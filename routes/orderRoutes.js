@@ -1,27 +1,17 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { Order, Dish } = require('../models');
+const { Order } = require("../models");
 
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
     try {
-        const { userId, dishes, address, paymentMethod } = req.body;
-        let total = 0;
-        for (const item of dishes) {
-            const dish = await Dish.findById(item.dishId);
-            if (!dish) throw new Error('Món ăn không tồn tại');
-            total += dish.price * item.quantity;
-        }
-        const order = new Order({
-            userId: userId || null,
-            dishes,
-            total,
-            address,
-            paymentMethod,
-        });
-        await order.save();
-        res.status(201).json({ message: 'Đặt hàng thành công!', orderId: order._id });
+        const { userId, items, total } = req.body;
+        const newOrder = new Order({ userId, items, total });
+        await newOrder.save();
+        console.log("Order saved:", newOrder); // Thêm log để kiểm tra
+        res.status(201).json(newOrder);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error("Error saving order:", error); // Thêm log lỗi
+        res.status(500).json({ message: error.message });
     }
 });
 
